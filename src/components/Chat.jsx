@@ -19,7 +19,6 @@ const Chat = ({ setSignedIn }) => {
 
 
     useEffect(() => {
-
         socket.connect(); // ✅ Start connection
         const loadUsers = async () => {
             const usersFromServer = await getAllUsersApi();
