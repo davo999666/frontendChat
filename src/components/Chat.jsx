@@ -4,7 +4,7 @@ import { io } from "socket.io-client";
 
 const socket = io("http://localhost:8080", {
     withCredentials: true,
-
+    autoConnect: false
 });
 
 const Chat = ({ setSignedIn }) => {
@@ -16,34 +16,34 @@ const Chat = ({ setSignedIn }) => {
     const [messages, setMessages] = useState([]);
     const [text, setText] = useState("");
 
-    useEffect(() => {
-        socket.connect(); // ✅ Start connection
 
+
+    useEffect(() => {
+
+        socket.connect(); // ✅ Start connection
         const loadUsers = async () => {
             const usersFromServer = await getAllUsersApi();
             setUsers(usersFromServer);
         };
         loadUsers();
-
         // ✅ Wait until connection is ready
         socket.on("connect", () => {
             socket.emit("user-join", login);
         });
-
         socket.on("chat-message", (msg) => {
             setMessages((prev) => [...prev, { ...msg, type: "public" }]);
         });
-
         socket.on("private-message", (msg) => {
             setMessages((prev) => [...prev, { ...msg, type: "private" }]);
         });
-
         socket.on("online-users", (list) => {
-            console.log(list)
             const names = list.map((u) => u.name);
             setOnlineUsers(names);
         });
-
+        socket.on("users-updated", async () => {
+            const users = await getAllUsersApi();
+            setUsers(users);
+        });
         return () => {
             socket.off("connect");
             socket.off("chat-message");
